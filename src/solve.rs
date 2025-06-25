@@ -6,15 +6,15 @@ use crate::{
 impl Board {
     fn find_best_pos(&self) -> Option<usize> {
         let mut best_pos = None;
-        let mut best_count = 10;
+        let mut best_count = Board::SIZE + 1;
         let occupancy = self.occupancy();
 
-        for pos in 0..81 {
+        for pos in 0..Board::AREA {
             if occupancy.is_bit_set(pos) {
                 continue;
             }
             let mut count = 0;
-            for digit in 0..9 {
+            for digit in 0..Board::SIZE {
                 if self.possibilities[digit].is_bit_set(pos) {
                     count += 1;
                     if count >= best_count {
@@ -43,7 +43,7 @@ impl Board {
         let x = pos % Board::SIZE as usize;
         let y = pos / Board::SIZE as usize;
 
-        for digit in 0..9 {
+        for digit in 0..Board::SIZE {
             if self.possibilities[digit].is_bit_set(pos) {
                 // do
                 let affected_mask = self.possibilities[digit]

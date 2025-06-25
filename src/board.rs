@@ -7,7 +7,7 @@ pub struct Board {
 
 impl Board {
     pub const SIZE: usize = 9;
-    pub const AREA: usize = Board::SIZE * Board::SIZE;
+    pub const AREA: usize = 81;
 
     pub fn new() -> Self {
         let possibilities = [bitboard::MAX; Board::SIZE];
