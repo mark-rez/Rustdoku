@@ -62,3 +62,10 @@ A puzzle is encoded as a string by reading the Sudoku board from left to right, 
 - Optimized search for the next best cell to solve first.
 - **bitwise operations** to speed up solving.
 
+## Benchmark
+Results for set of 2365 sudoku puzzles:
+```sh
+real    0m0.077s
+user    0m0.073s
+sys     0m0.004s
+```
