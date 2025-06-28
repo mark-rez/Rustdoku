@@ -7,20 +7,11 @@ impl Board {
     fn find_best_pos(&self) -> Option<usize> {
         let mut best_pos = None;
         let mut best_count = Board::SIZE + 1;
-        let occupancy = self.occupancy();
 
         for pos in 0..Board::AREA {
-            if occupancy.is_bit_set(pos) {
+            let count = self.count[pos] as usize;
+            if count == 0 {
                 continue;
-            }
-            let mut count = 0;
-            for digit in 0..Board::SIZE {
-                if self.possibilities[digit].is_bit_set(pos) {
-                    count += 1;
-                    if count >= best_count {
-                        break;
-                    }
-                }
             }
             if count < best_count {
                 best_count = count;
@@ -30,7 +21,6 @@ impl Board {
                 }
             }
         }
-
         best_pos
     }
 
@@ -49,8 +39,11 @@ impl Board {
                 let affected_mask = self.possibilities[digit]
                     & (COLUMNS[x] | ROWS[y] | SQUARES[x / 3 + (y / 3) * 3]);
 
+                let copied_count = self.count.clone();
+
                 self.possibilities[digit].clear(affected_mask);
                 self.occupancies[digit].set_bit(pos);
+                self.update_count(affected_mask, pos);
 
                 if self.solve() {
                     return true;
@@ -59,6 +52,7 @@ impl Board {
                 // undo
                 self.occupancies[digit].clear_bit(pos);
                 self.possibilities[digit] |= affected_mask;
+                self.count = copied_count;
             }
         }
         false

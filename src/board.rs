@@ -3,6 +3,7 @@ use crate::bitboard::{self, BitboardExt, COLUMNS, ROWS, SQUARES};
 pub struct Board {
     pub possibilities: [u128; Board::SIZE],
     pub occupancies: [u128; Board::SIZE],
+    pub count: [usize; Board::AREA],
 }
 
 impl Board {
@@ -10,13 +11,10 @@ impl Board {
     pub const AREA: usize = 81;
 
     pub fn new() -> Self {
-        let possibilities = [bitboard::MAX; Board::SIZE];
-
-        let occupancies = [0; Board::SIZE];
-
         Self {
-            possibilities,
-            occupancies,
+            possibilities: [bitboard::MAX; Board::SIZE],
+            occupancies: [0; Board::SIZE],
+            count: [Board::SIZE; Board::AREA],
         }
     }
 
@@ -35,7 +33,7 @@ impl Board {
             return Err("Invalid characters in input string".to_string());
         }
 
-        self.clear();
+        self.reset();
 
         for (i, c) in board_string.chars().enumerate() {
             if c != '.' {
@@ -52,24 +50,34 @@ impl Board {
                     ));
                 }
 
-                self.occupancies[digit].set_bit(i);
-
                 let affected_mask = self.possibilities[digit]
                     & (COLUMNS[x] | ROWS[y] | SQUARES[x / 3 + (y / 3) * 3]);
 
+                // update board
+                self.occupancies[digit].set_bit(i);
                 self.possibilities[digit].clear(affected_mask);
+                self.update_count(affected_mask, i);
             }
         }
         Ok(())
     }
 
-    pub fn clear(&mut self) {
-        self.possibilities = [bitboard::MAX; Board::SIZE];
-        self.occupancies = [0; Board::SIZE];
+    pub fn update_count(&mut self, mut affected_mask: u128, pos: usize) {
+        while affected_mask != 0 {
+            let bit = affected_mask.trailing_zeros() as usize;
+            affected_mask &= affected_mask - 1;
+
+            if self.count[bit] > 0 {
+                self.count[bit] -= 1;
+            }
+        }
+        self.count[pos] = 0;
     }
 
-    pub fn occupancy(&self) -> u128 {
-        self.occupancies.iter().fold(0, |acc, o| acc | o)
+    pub fn reset(&mut self) {
+        self.possibilities = [bitboard::MAX; Board::SIZE];
+        self.occupancies = [0; Board::SIZE];
+        self.count = [Board::SIZE; Board::AREA];
     }
 
     pub fn print(&self) {
